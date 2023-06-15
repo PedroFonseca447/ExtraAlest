@@ -62,13 +62,15 @@ public class Avl {
         n.altura = Math.max(height(n.left), height(n.right)) + 1;
 
         // Verifica o balanceamento após a inserção
-        int balance = balanceFactor(n);
+        //de forma recursiva em todos os nodos da
+        //árvore
+        int balance = CoeficienteDeBalanceamento(n);
         if (balance > 1) {
             if (element.compareTo(n.left.elemento) < 0) {
                 // Rotação simples à direita
                 n = rotateRight(n);
             } else {
-                // Rotação dupla à esquerda e depois à direita
+                // Rotação dupla, esquerda e depois  direita
                 n = rotateLeftRight(n);
             }
         } else if (balance < -1) {
@@ -76,7 +78,7 @@ public class Avl {
                 // Rotação simples à esquerda
                 n = rotateLeft(n);
             } else {
-                // Rotação dupla à direita e depois à esquerda
+                // Rotação dupla,  direita e depois esquerda
                 n = rotateRightLeft(n);
             }
         }
@@ -89,7 +91,7 @@ public class Avl {
     //e retorna se esta balanceado(0,1 ou -1) ou retorna que esta
     //desbalanceado (se o inteiro retornar -2 ou 2 pra mais indica isso)
 
-    private int balanceFactor(Nodo n) {
+    private int CoeficienteDeBalanceamento(Nodo n) {
         int leftHeight = height(n.left);
         int rightHeight = height(n.right);
         return leftHeight - rightHeight;
@@ -106,17 +108,21 @@ public class Avl {
 
     //recebe o nodo e sua altura
     //calcula ela depois de ser solicitado 
+    //normalmente a cada inserção e remoção
     //retorna nova altura do nodo
     private void updateHeight(Nodo n) {
         n.altura = Math.max(height(n.left), height(n.right)) + 1;
     }
 
     private Nodo rotateRight(Nodo n) {
+        
         Nodo newRoot = n.left;
+        //ai faz ele rodar para a direita, em relação ao seu filho
         n.left = newRoot.right;
         if (newRoot.right != null) {
             newRoot.right.father = n;
         }
+
         newRoot.right = n;
         newRoot.father = n.father;
         n.father = newRoot;
