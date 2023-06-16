@@ -9,38 +9,50 @@ public class Avl {
         Nodo right;
         Nodo left;
         public int altura;
+        
         public Nodo(Integer e) {
             this.elemento = e;
             father = null;
             right = null;
             left = null;
-            altura=0;
+            altura = 0;
         }
     }
 
-   public Nodo root;
-   public int count;
+    public Nodo root;
+    public int count;
 
-
-    public Avl(){
-        root=null;
-        count=0;
+    public Avl() {
+        root = null;
+        count = 0;
     }
-    
-
-    public boolean addRoot(Integer e){
+    /**
+         * @param e é o elemento que será adicionado ao root da árvore
+         * @return true se a árvore ainda não tem uma raíz.
+         * @return false se a árvore já tem uma raíz
+         */
+    public boolean addRoot(Integer e) {
         Nodo aux = new Nodo(e);
 
-        if(root != null){
+        if (root != null) {
             return false;
         }
-        
-        root=aux;
+
+        root = aux;
         count++;
         return true;
     }
 
-     public void add(Integer element) {
+        /**
+         * Esse método de forma recursiva, percorre a árvore a cada inserção de elemento
+         * partindo do root, após a inserção usando do elemento presente no nodo(altura) 
+         * ele análisa se essa inserção causou algum diferencial no coeficiente de balance-
+         * amento de algum dos nodos presentes na árvore, e a organiza caso seja necessário
+         * @param element é o elemento que será adicionado ao novo nodo da árvore    
+         */
+
+
+    public void add(Integer element) {
         root = add(root, element, null);
         count++;
     }
@@ -62,15 +74,13 @@ public class Avl {
         n.altura = Math.max(height(n.left), height(n.right)) + 1;
 
         // Verifica o balanceamento após a inserção
-        //de forma recursiva em todos os nodos da
-        //árvore
         int balance = CoeficienteDeBalanceamento(n);
         if (balance > 1) {
             if (element.compareTo(n.left.elemento) < 0) {
                 // Rotação simples à direita
                 n = rotateRight(n);
             } else {
-                // Rotação dupla, esquerda e depois  direita
+                // Rotação dupla, esquerda e depois direita
                 n = rotateLeftRight(n);
             }
         } else if (balance < -1) {
@@ -78,51 +88,146 @@ public class Avl {
                 // Rotação simples à esquerda
                 n = rotateLeft(n);
             } else {
-                // Rotação dupla,  direita e depois esquerda
+                // Rotação dupla, direita e depois esquerda
                 n = rotateRightLeft(n);
             }
         }
 
         return n;
     }
+    /**
+     * @param element recebe o elemento que terá seu nodo removido da árvore
+     * Nesse método assim como no add, deve ser feito a remoção tomando cuidado
+     * para manter a avl balanceada, em caso de alterações de coeficiente de bala
+     * ceamento de cada nodo.
+     */
 
-    //recebe as alturas tanto da esquerda como da direita
-    //calcula o coeficiente de balanceamento
-    //e retorna se esta balanceado(0,1 ou -1) ou retorna que esta
-    //desbalanceado (se o inteiro retornar -2 ou 2 pra mais indica isso)
+    public void remove(Integer element) {
+        root = remove(root, element);
+        count--;
+    }
 
-    private int CoeficienteDeBalanceamento(Nodo n) {
-        int leftHeight = height(n.left);
-        int rightHeight = height(n.right);
+    private Nodo remove(Nodo n, Integer element) {
+        if (n == null) {
+            return null;
+        }
+
+        if (n.elemento.compareTo(element) < 0) {
+            n.right = remove(n.right, element);
+        } else if (n.elemento.compareTo(element) > 0) {
+            n.left = remove(n.left, element);
+        } else {
+            if (n.left == null || n.right == null) {
+                // Caso 1: Nó com 0 ou 1 filho
+                Nodo aux = (n.left != null) ? n.left : n.right;
+                if (aux == null) {
+                    // Nó folha, apenas o remove
+                    aux = n;
+                    n = null;
+                } else {
+                    // Nó com 1 filho, copia os valores do filho para o nó atual
+                    n.elemento = aux.elemento;
+                    n.left = aux.left;
+                    n.right = aux.right;
+                }
+                aux = null; // Libera o nó removido da memória
+            } else {
+                // Caso 2: Nó com 2 filhos
+                Nodo minRight = findMin(n.right); // Encontra o nó mínimo na subárvore direita
+                n.elemento = minRight.elemento; // Substitui o elemento do nó atual pelo mínimo encontrado
+                n.right = remove(n.right, minRight.elemento); // Remove o nó mínimo encontrado
+            }
+        }
+
+        if (n != null) {
+            // Atualiza a altura do nó
+            n.altura = Math.max(height(n.left), height(n.right)) + 1;
+
+            // Verifica o balanceamento após a remoção
+            int balance = CoeficienteDeBalanceamento(n);
+            if (balance > 1) {
+                if (CoeficienteDeBalanceamento(n.left) >= 0) {
+                    // Rotação simples à direita
+                    n = rotateRight(n);
+                } else {
+                    // Rotação dupla, esquerda e depois direita
+                    n = rotateLeftRight(n);
+                }
+            } else if (balance < -1) {
+                if (CoeficienteDeBalanceamento(n.right) <= 0) {
+                    // Rotação simples à esquerda
+                    n = rotateLeft(n);
+                } else {
+                    // Rotação dupla, direita e depois esquerda
+                    n = rotateRightLeft(n);
+                }
+            }
+        }
+
+        return n;
+    }
+    /**
+     * @param aux recebe um nodo
+     * @return o valor minimo na subárvore solicitada pelo nodo seja na esquerda ou direita
+     */
+
+    private Nodo findMin(Nodo aux) {
+        if (aux.left == null) {
+            return aux;
+        }
+        return findMin(aux.left);
+    }
+
+    /**
+     * Esse método realiza a operação de calculo para saber se o nodo aux possui um desbalanceamento
+     * caso ele devolva um número superior a 1 ou inferior a -1 indica que está desbalanceado.
+     * @param aux ao receber o nodo, calcula a altura de suas subTree.
+     * @return a diferença entre a altura de uma subtree da esquerda do aux menos a altura da subtree a direita de aux
+     */
+
+    private int CoeficienteDeBalanceamento(Nodo aux) {
+        int leftHeight = height(aux.left);
+        int rightHeight = height(aux.right);
         return leftHeight - rightHeight;
     }
 
-    //recebe o nodo e calcula sua altura na arvore
+     /**
+     * @param recebe o nodo consultado sobre a altura
+     * @return devolve a altura do nodo.
+     */
 
-    private int height(Nodo n) {
-        if (n == null) {
+
+    private int height(Nodo aux) {
+        if (aux == null) {
             return -1;
         }
-        return n.altura;
+        return aux.altura;
     }
 
-    //recebe o nodo e sua altura
-    //calcula ela depois de ser solicitado 
-    //normalmente a cada inserção e remoção
-    //retorna nova altura do nodo
+     /**
+      * Esse método funciona para a cada inserção/remoção ele realizar a atualização das alturas
+      e assim ajudar se ocorreu algum desbalanceamento na avl. Após a operação ele realiza a alteração
+      usando o Math.max para pegar o maior valor em uma operação de 2 inteiros
+     * @param n um nodo para recalcular sua altura
+     **/
+
     private void updateHeight(Nodo n) {
         n.altura = Math.max(height(n.left), height(n.right)) + 1;
     }
 
+
+     /**
+      * Nesse método recebe o nodo com  a diferença das alturas de sua subtree 
+    sendo de <-1, assim demonstrando que precisa de todos os nodos em contados com
+      o n em específico girem para a direita.
+     * @param n nodo que possui em seu coeficiente um desbalanceamento
+     */
     private Nodo rotateRight(Nodo n) {
-        
         Nodo newRoot = n.left;
-        //ai faz ele rodar para a direita, em relação ao seu filho
         n.left = newRoot.right;
         if (newRoot.right != null) {
             newRoot.right.father = n;
         }
-
         newRoot.right = n;
         newRoot.father = n.father;
         n.father = newRoot;
@@ -132,6 +237,12 @@ public class Avl {
 
         return newRoot;
     }
+     /**
+      * Nesse método recebe o nodo com essa diferença  das alturas de sua subtree
+     sendo de >1, assim demonstrando que precisa de todos os nodos em contados com
+      o n em específico girem para a esquerda.
+     * @param n nodo que possui em seu coeficiente um desbalanceamento
+     */
 
     private Nodo rotateLeft(Nodo n) {
         Nodo newRoot = n.right;
@@ -148,20 +259,31 @@ public class Avl {
 
         return newRoot;
     }
+     /**
+     * Tem casos que apenas um único giro, n é suficiente e mantém a árvore desequilibrada,
+     * nisso esse método ativa primeiro o giro do filho do nodo n para a esquerda, e depois gira
+     * o n para a direita junto de seus filhos
+     * @param n nodo que possui em seu coeficiente um desbalanceamento
+     */
 
     private Nodo rotateLeftRight(Nodo n) {
         n.left = rotateLeft(n.left);
         return rotateRight(n);
     }
 
+
+       /**
+     * Tem casos que apenas um único giro, n é suficiente e mantém a árvore desequilibrada,
+     * nisso esse método ativa primeiro o giro do filho do nodo n para a direita, e depois gira
+     * o n para a esquerda junto de seus filhos
+     * @param n nodo que possui em seu coeficiente um desbalanceamento
+     */
+
     private Nodo rotateRightLeft(Nodo n) {
         n.right = rotateRight(n.right);
         return rotateLeft(n);
     }
 
-
-
-    
     public void generateDot(String filename) {
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write("digraph AVL {\n");
@@ -191,8 +313,5 @@ public class Avl {
         generateDot(n.left, writer);
         generateDot(n.right, writer);
     }
-
-
-
 
 }
