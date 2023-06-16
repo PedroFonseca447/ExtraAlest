@@ -225,6 +225,10 @@ public class Avl {
     private Nodo rotateRight(Nodo n) {
         Nodo newRoot = n.left;
         n.left = newRoot.right;
+        //nesse caso procura se o nodo
+        //a direita do nodo que está sendo
+        //realocado possui filhos e torna esse filho
+        //filho do antigo root reposicionando a árvpre
         if (newRoot.right != null) {
             newRoot.right.father = n;
         }
@@ -232,7 +236,10 @@ public class Avl {
         newRoot.father = n.father;
         n.father = newRoot;
 
+        //atualiza as alturas 
         updateHeight(n);
+      
+       //atualiza as alturas 
         updateHeight(newRoot);
 
         return newRoot;
@@ -247,14 +254,19 @@ public class Avl {
     private Nodo rotateLeft(Nodo n) {
         Nodo newRoot = n.right;
         n.right = newRoot.left;
+         //nesse caso procura se o nodo
+        //a esquerda do nodo que está sendo
+        //realocado possui filhos e torna esse filho
+        //filho do antigo root realocado na árvore
         if (newRoot.left != null) {
             newRoot.left.father = n;
         }
         newRoot.left = n;
         newRoot.father = n.father;
         n.father = newRoot;
-
+        //atualiza as alturas 
         updateHeight(n);
+        //atualiza as alturas 
         updateHeight(newRoot);
 
         return newRoot;
@@ -283,6 +295,36 @@ public class Avl {
         n.right = rotateRight(n.right);
         return rotateLeft(n);
     }
+
+
+    public boolean contains(Integer procura){
+        Nodo n = searchNodo(procura, root);
+        return (n!=null);
+    }
+
+    private Nodo searchNodo(Integer eInteger,Nodo aux){
+        if(aux==null|| eInteger==null){
+            return null;
+        }
+        if(eInteger==aux.elemento){
+            return aux;
+        }
+        if (eInteger < aux.elemento)
+         return searchNodo(eInteger, aux.left);
+       else
+          return searchNodo(eInteger, aux.right);
+
+    
+    }
+
+
+
+
+
+
+
+
+
 
     public void generateDot(String filename) {
         try (FileWriter writer = new FileWriter(filename)) {

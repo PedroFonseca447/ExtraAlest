@@ -14,7 +14,7 @@ public class App {
         a.add(3);
         a.add(1);
     
-    
+        System.out.println(a.contains(2));
      
         a.generateDot("exemplo");
     }
